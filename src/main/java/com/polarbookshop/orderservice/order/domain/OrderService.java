@@ -6,6 +6,8 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.time.Duration;
+
 @Service
 public class OrderService {
 
@@ -33,6 +35,7 @@ public class OrderService {
         return bookClient.getBookByIsbn(isbn)
                 .map(book -> buildAcceptedOrder(book, quantity))
                 .defaultIfEmpty(buildRejectedOrder(isbn, quantity))
-                .flatMap(orderRepository::save);
+                .flatMap(orderRepository::save)
+                .timeout(Duration.ofSeconds(3));
     }
 }
