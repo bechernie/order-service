@@ -1,5 +1,6 @@
 package com.github.bechernie.orderservice.book;
 
+import com.github.bechernie.orderservice.config.ClientProperties;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.AfterEach;
@@ -24,7 +25,7 @@ class BookClientTests {
         final var webClient = WebClient.builder()
                 .baseUrl(this.mockWebServer.url("/").uri().toString())
                 .build();
-        this.bookClient = new BookClient(webClient);
+        this.bookClient = new BookClient(webClient, new ClientProperties());
     }
 
     @AfterEach
