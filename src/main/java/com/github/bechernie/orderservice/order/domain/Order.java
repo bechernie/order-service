@@ -1,5 +1,6 @@
 package com.github.bechernie.orderservice.order.domain;
 
+import com.github.bechernie.orderservice.book.Book;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -30,5 +31,9 @@ public record Order(
 
     public static Order buildRejectedOrder(String bookIsbn, int quantity) {
         return Order.of(bookIsbn, null, null, quantity, OrderStatus.REJECTED);
+    }
+
+    public static Order buildAcceptedOrder(Book book, int quantity) {
+        return Order.of(book.isbn(), book.title(), book.price(), quantity, OrderStatus.ACCEPTED);
     }
 }
