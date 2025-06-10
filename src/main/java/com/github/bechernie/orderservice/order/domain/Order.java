@@ -27,4 +27,8 @@ public record Order(
     public static Order of(String bookIsbn, String bookName, Double bookPrice, Integer quantity, OrderStatus status) {
         return new Order(null, bookIsbn, bookName, bookPrice, quantity, status, null, null, 0);
     }
+
+    public static Order buildRejectedOrder(String bookIsbn, int quantity) {
+        return Order.of(bookIsbn, null, null, quantity, OrderStatus.REJECTED);
+    }
 }
