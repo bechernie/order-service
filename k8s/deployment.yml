@@ -42,12 +42,12 @@ spec:
           livenessProbe:
             httpGet:
               path: /actuator/health/liveness
-              port: 9001
-            initialDelaySeconds: 10
-            periodSeconds: 5
+              port: 9002
+            initialDelaySeconds: 60
+            periodSeconds: 15
           readinessProbe:
             httpGet:
               path: /actuator/health/readiness
-              port: 9001
-            initialDelaySeconds: 5
+              port: 9002
+            initialDelaySeconds: 60
             periodSeconds: 15
