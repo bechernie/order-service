@@ -36,4 +36,18 @@ public record Order(
     public static Order buildAcceptedOrder(Book book, int quantity) {
         return Order.of(book.isbn(), book.title(), book.price(), quantity, OrderStatus.ACCEPTED);
     }
+
+    public static Order buildDispatchedOrder(Order existingOrder) {
+        return new Order(
+                existingOrder.id(),
+                existingOrder.bookIsbn(),
+                existingOrder.bookName(),
+                existingOrder.bookPrice(),
+                existingOrder.quantity(),
+                OrderStatus.DISPATCHED,
+                existingOrder.createdDate(),
+                existingOrder.lastModifiedDate(),
+                existingOrder.version()
+        );
+    }
 }
