@@ -39,6 +39,7 @@ import static org.mockito.BDDMockito.given;
 @Testcontainers
 class OrderServiceApplicationTests {
 
+    private static KeycloakToken bjornToken;
     private static KeycloakToken isabelleToken;
 
     @Autowired
@@ -69,6 +70,7 @@ class OrderServiceApplicationTests {
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
                 .build();
 
+        bjornToken = authenticateWith("bjorn", "password", webClient);
         isabelleToken = authenticateWith("isabelle", "password", webClient);
     }
 
@@ -96,6 +98,47 @@ class OrderServiceApplicationTests {
                 .expectStatus().is2xxSuccessful()
                 .expectBodyList(Order.class).value(orders -> {
                     assertThat(orders.stream().filter(order -> order.bookIsbn().equals(bookIsbn)).findAny()).isNotEmpty();
+                });
+    }
+
+    @Test
+    void whenGetOrdersForAnotherUserThenNotReturned() throws IOException {
+        final var bookIsbn = "1234567893";
+        final var book = new Book(bookIsbn, "Title", "Author", 9.90);
+        given(bookClient.getBookByIsbn(bookIsbn)).willReturn(Mono.just(book));
+        final var orderRequest = new OrderRequest(bookIsbn, 1);
+        final var orderByIsabelle = webTestClient
+                .post()
+                .uri("/orders")
+                .headers(header -> header.setBearerAuth(isabelleToken.accessToken()))
+                .bodyValue(orderRequest)
+                .exchange()
+                .expectStatus().is2xxSuccessful()
+                .expectBody(Order.class).returnResult().getResponseBody();
+        assertThat(orderByIsabelle).isNotNull();
+        assertThat(objectMapper.readValue(output.receive().getPayload(), OrderAcceptedMessage.class))
+                .isEqualTo(new OrderAcceptedMessage(orderByIsabelle.id()));
+
+        final var orderByBjorn = webTestClient
+                .post()
+                .uri("/orders")
+                .headers(header -> header.setBearerAuth(bjornToken.accessToken()))
+                .bodyValue(orderRequest)
+                .exchange()
+                .expectStatus().is2xxSuccessful()
+                .expectBody(Order.class).returnResult().getResponseBody();
+        assertThat(orderByBjorn).isNotNull();
+        assertThat(objectMapper.readValue(output.receive().getPayload(), OrderAcceptedMessage.class))
+                .isEqualTo(new OrderAcceptedMessage(orderByBjorn.id()));
+
+
+        webTestClient.get().uri("/orders")
+                .headers(header -> header.setBearerAuth(isabelleToken.accessToken()))
+                .exchange()
+                .expectStatus().is2xxSuccessful()
+                .expectBodyList(Order.class).value(orders -> {
+                    assertThat(orders).map(Order::id).contains(orderByIsabelle.id());
+                    assertThat(orders).map(Order::id).doesNotContain(orderByBjorn.id());
                 });
     }
 
