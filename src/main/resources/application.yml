@@ -71,6 +71,9 @@ management:
       show-components: always
       probes:
         enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
 
 polar:
   catalog-service-uri: "http://localhost:9001"
